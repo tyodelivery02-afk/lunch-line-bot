@@ -226,9 +226,9 @@ function compactOrderRow(date) {
                 margin: "none",
                 contents: [
                     compactOrderButton("[日替]", "daily", date, 2),
-                    compactOrderButton("[日替(おかず)]", "daily_side", date, 3),
-                    compactOrderButton("[丼]", "don", date, 1),
-                    compactOrderButton("[面]", "men", date, 1),
+                    compactOrderButton("[日替(おかずのみ)]", "daily_side", date, 3),
+                    compactOrderButton("[丼]", "don", date, 2),
+                    compactOrderButton("[面]", "men", date, 2),
                     compactOrderButton("やめる", "no_order", date, 2),
                 ],
             },
@@ -368,7 +368,7 @@ function reservationHeaderRow() {
         contents: [
             tableHeaderCell("日付", 2),
             tableHeaderCell("日替\n500", 2),
-            tableHeaderCell("日替（おかずのみ）\n400", 2),
+            tableHeaderCell("日替（おかずのみ）\n400", 3),
             tableHeaderCell("丼\n500", 1),
             tableHeaderCell("面\n500", 1),
             tableHeaderCell("合計", 2),
