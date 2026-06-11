@@ -43,6 +43,9 @@ const ORDER_ITEMS = {
 const FOOD_ITEM_KEYS = ["daily", "daily_side", "don", "men"];
 const CHECK_ITEM_KEYS = ["daily", "daily_side", "don", "men", "no_order"];
 
+const CARD_TITLE_SIZE = "md";
+const CARD_TEXT_SIZE = "xs";
+
 function verifyLineSignature(rawBody, signature) {
     if (!CHANNEL_SECRET) return true;
 
@@ -94,7 +97,9 @@ function textMessage(text) {
 
 function itemDisplayName(itemKey) {
     const item = ORDER_ITEMS[itemKey];
+
     if (!item) return itemKey;
+
     return item.detailLabel || item.label;
 }
 
@@ -209,7 +214,7 @@ function compactOrderRow(date) {
             {
                 type: "text",
                 text: date.display,
-                size: "sm",
+                size: CARD_TEXT_SIZE,
                 weight: "bold",
                 margin: "none",
                 wrap: false,
@@ -220,10 +225,10 @@ function compactOrderRow(date) {
                 spacing: "none",
                 margin: "none",
                 contents: [
-                    compactOrderButton("日替", "daily", date, 2),
-                    compactOrderButton("おかず", "daily_side", date, 3),
-                    compactOrderButton("丼", "don", date, 1),
-                    compactOrderButton("面", "men", date, 1),
+                    compactOrderButton("[日替]", "daily", date, 2),
+                    compactOrderButton("[日替(おかず)]", "daily_side", date, 3),
+                    compactOrderButton("[丼]", "don", date, 1),
+                    compactOrderButton("[面]", "men", date, 1),
                     compactOrderButton("やめる", "no_order", date, 2),
                 ],
             },
@@ -271,7 +276,7 @@ function orderMenuFlex(customerName) {
                                 type: "text",
                                 text: "注文メニュー",
                                 weight: "bold",
-                                size: "md",
+                                size: CARD_TITLE_SIZE,
                                 wrap: true,
                                 flex: 5,
                                 gravity: "center",
@@ -283,7 +288,7 @@ function orderMenuFlex(customerName) {
                                 flex: 4,
                                 action: {
                                     type: "postback",
-                                    label: "メインメニュー",
+                                    label: "[メインメニュー]",
                                     data: "action=show_main_menu",
                                 },
                             },
@@ -291,14 +296,14 @@ function orderMenuFlex(customerName) {
                     },
                     {
                         type: "text",
-                        text: `「${customerName}」様`,
-                        size: "xs",
+                        text: `「${customerName}」様、何を召し上がりますか...`,
+                        size: CARD_TEXT_SIZE,
                         wrap: true,
                     },
                     {
                         type: "text",
                         text: "※おかずのみ以外は500円",
-                        size: "xs",
+                        size: CARD_TEXT_SIZE,
                         wrap: true,
                     },
                     {
@@ -316,7 +321,7 @@ function tableHeaderCell(text, flex = 2) {
     return {
         type: "text",
         text,
-        size: "xxs",
+        size: CARD_TEXT_SIZE,
         weight: "bold",
         align: "center",
         gravity: "center",
@@ -329,7 +334,7 @@ function tableTextCell(text, flex = 2, weight = "regular") {
     return {
         type: "text",
         text,
-        size: "xxs",
+        size: CARD_TEXT_SIZE,
         weight,
         align: "center",
         gravity: "center",
@@ -363,7 +368,7 @@ function reservationHeaderRow() {
         contents: [
             tableHeaderCell("日付", 2),
             tableHeaderCell("日替\n500", 2),
-            tableHeaderCell("おかず\n400", 2),
+            tableHeaderCell("日替（おかずのみ）\n400", 2),
             tableHeaderCell("丼\n500", 1),
             tableHeaderCell("面\n500", 1),
             tableHeaderCell("合計", 2),
@@ -400,7 +405,7 @@ function reservationTableRow(date, dateGroup) {
 }
 
 function reservationCheckFlex(summaryData) {
-    const { targetDates, groupedByDate, grandTotal } = summaryData;
+    const { targetDates, groupedByDate } = summaryData;
     const rows = [];
 
     rows.push(reservationHeaderRow());
@@ -441,7 +446,7 @@ function reservationCheckFlex(summaryData) {
                                 type: "text",
                                 text: "予約チェック",
                                 weight: "bold",
-                                size: "md",
+                                size: CARD_TITLE_SIZE,
                                 wrap: true,
                                 flex: 5,
                                 gravity: "center",
@@ -453,7 +458,7 @@ function reservationCheckFlex(summaryData) {
                                 flex: 4,
                                 action: {
                                     type: "postback",
-                                    label: "メインメニュー",
+                                    label: "[メインメニュー]",
                                     data: "action=show_main_menu",
                                 },
                             },
@@ -462,7 +467,7 @@ function reservationCheckFlex(summaryData) {
                     {
                         type: "text",
                         text: "※数字を押すと食いしん坊さんたちが現れるよ...",
-                        size: "xxs",
+                        size: CARD_TEXT_SIZE,
                         wrap: true,
                     },
                     {
@@ -470,18 +475,6 @@ function reservationCheckFlex(summaryData) {
                         margin: "xs",
                     },
                     ...rows,
-                    {
-                        type: "separator",
-                        margin: "sm",
-                    },
-                    {
-                        type: "text",
-                        text: `総合計：${grandTotal}円`,
-                        size: "sm",
-                        weight: "bold",
-                        align: "end",
-                        wrap: true,
-                    },
                 ],
             },
         },
@@ -635,21 +628,9 @@ async function getReservationSummaryData() {
         groupedByDate[dateKey].items[row.item_key].push(row.customer_name);
     }
 
-    let grandTotal = 0;
-
-    for (const date of targetDates) {
-        const items = groupedByDate[date.iso].items;
-
-        grandTotal += items.daily.length * ORDER_ITEMS.daily.price;
-        grandTotal += items.daily_side.length * ORDER_ITEMS.daily_side.price;
-        grandTotal += items.don.length * ORDER_ITEMS.don.price;
-        grandTotal += items.men.length * ORDER_ITEMS.men.price;
-    }
-
     return {
         targetDates,
         groupedByDate,
-        grandTotal,
     };
 }
 
