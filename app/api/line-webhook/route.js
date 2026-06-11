@@ -22,7 +22,8 @@ const ORDER_ITEMS = {
         price: 500,
     },
     daily_side: {
-        label: "日替（おかずのみ）",
+        label: "おかず",
+        detailLabel: "日替（おかずのみ）",
         price: 400,
     },
     don: {
@@ -40,6 +41,7 @@ const ORDER_ITEMS = {
 };
 
 const FOOD_ITEM_KEYS = ["daily", "daily_side", "don", "men"];
+const CHECK_ITEM_KEYS = ["daily", "daily_side", "don", "men", "no_order"];
 
 function verifyLineSignature(rawBody, signature) {
     if (!CHANNEL_SECRET) return true;
@@ -90,6 +92,12 @@ function textMessage(text) {
     };
 }
 
+function itemDisplayName(itemKey) {
+    const item = ORDER_ITEMS[itemKey];
+    if (!item) return itemKey;
+    return item.detailLabel || item.label;
+}
+
 function mainMenuFlex() {
     return {
         type: "flex",
@@ -128,7 +136,7 @@ function mainMenuFlex() {
                         margin: "xs",
                         action: {
                             type: "postback",
-                            label: "注文したい！",
+                            label: "注文したい...",
                             data: "action=start_order",
                         },
                     },
@@ -255,11 +263,31 @@ function orderMenuFlex(customerName) {
                 paddingAll: "10px",
                 contents: [
                     {
-                        type: "text",
-                        text: "注文メニュー",
-                        weight: "bold",
-                        size: "md",
-                        wrap: true,
+                        type: "box",
+                        layout: "horizontal",
+                        spacing: "xs",
+                        contents: [
+                            {
+                                type: "text",
+                                text: "注文メニュー",
+                                weight: "bold",
+                                size: "md",
+                                wrap: true,
+                                flex: 5,
+                                gravity: "center",
+                            },
+                            {
+                                type: "button",
+                                style: "link",
+                                height: "sm",
+                                flex: 4,
+                                action: {
+                                    type: "postback",
+                                    label: "メインメニュー",
+                                    data: "action=show_main_menu",
+                                },
+                            },
+                        ],
                     },
                     {
                         type: "text",
@@ -278,6 +306,182 @@ function orderMenuFlex(customerName) {
                         margin: "xs",
                     },
                     ...buildCompactOrderRows(),
+                ],
+            },
+        },
+    };
+}
+
+function tableHeaderCell(text, flex = 2) {
+    return {
+        type: "text",
+        text,
+        size: "xxs",
+        weight: "bold",
+        align: "center",
+        gravity: "center",
+        wrap: true,
+        flex,
+    };
+}
+
+function tableTextCell(text, flex = 2, weight = "regular") {
+    return {
+        type: "text",
+        text,
+        size: "xxs",
+        weight,
+        align: "center",
+        gravity: "center",
+        wrap: true,
+        flex,
+    };
+}
+
+function tableCountButton(count, date, itemKey, flex = 2) {
+    return {
+        type: "button",
+        style: "link",
+        height: "sm",
+        flex,
+        action: {
+            type: "postback",
+            label: String(count),
+            data: `action=order_detail&date=${date.iso}&display=${encodeURIComponent(
+                date.display
+            )}&item=${itemKey}`,
+        },
+    };
+}
+
+function reservationHeaderRow() {
+    return {
+        type: "box",
+        layout: "horizontal",
+        spacing: "none",
+        margin: "xs",
+        contents: [
+            tableHeaderCell("日付", 2),
+            tableHeaderCell("日替\n500", 2),
+            tableHeaderCell("おかず\n400", 2),
+            tableHeaderCell("丼\n500", 1),
+            tableHeaderCell("面\n500", 1),
+            tableHeaderCell("合計", 2),
+        ],
+    };
+}
+
+function reservationTableRow(date, dateGroup) {
+    const dailyCount = dateGroup.items.daily.length;
+    const sideCount = dateGroup.items.daily_side.length;
+    const donCount = dateGroup.items.don.length;
+    const menCount = dateGroup.items.men.length;
+
+    const total =
+        dailyCount * ORDER_ITEMS.daily.price +
+        sideCount * ORDER_ITEMS.daily_side.price +
+        donCount * ORDER_ITEMS.don.price +
+        menCount * ORDER_ITEMS.men.price;
+
+    return {
+        type: "box",
+        layout: "horizontal",
+        spacing: "none",
+        margin: "none",
+        contents: [
+            tableTextCell(date.display, 2, "bold"),
+            tableCountButton(dailyCount, date, "daily", 2),
+            tableCountButton(sideCount, date, "daily_side", 2),
+            tableCountButton(donCount, date, "don", 1),
+            tableCountButton(menCount, date, "men", 1),
+            tableTextCell(`${total}`, 2, "bold"),
+        ],
+    };
+}
+
+function reservationCheckFlex(summaryData) {
+    const { targetDates, groupedByDate, grandTotal } = summaryData;
+    const rows = [];
+
+    rows.push(reservationHeaderRow());
+    rows.push({
+        type: "separator",
+        margin: "xs",
+    });
+
+    targetDates.forEach((date, index) => {
+        rows.push(reservationTableRow(date, groupedByDate[date.iso]));
+
+        if (index < targetDates.length - 1) {
+            rows.push({
+                type: "separator",
+                margin: "xs",
+            });
+        }
+    });
+
+    return {
+        type: "flex",
+        altText: "予約チェック",
+        contents: {
+            type: "bubble",
+            size: "giga",
+            body: {
+                type: "box",
+                layout: "vertical",
+                spacing: "xs",
+                paddingAll: "10px",
+                contents: [
+                    {
+                        type: "box",
+                        layout: "horizontal",
+                        spacing: "xs",
+                        contents: [
+                            {
+                                type: "text",
+                                text: "予約チェック",
+                                weight: "bold",
+                                size: "md",
+                                wrap: true,
+                                flex: 5,
+                                gravity: "center",
+                            },
+                            {
+                                type: "button",
+                                style: "link",
+                                height: "sm",
+                                flex: 4,
+                                action: {
+                                    type: "postback",
+                                    label: "メインメニュー",
+                                    data: "action=show_main_menu",
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        type: "text",
+                        text: "※数字を押すと食いしん坊さんたちが現れるよ...",
+                        size: "xxs",
+                        wrap: true,
+                    },
+                    {
+                        type: "separator",
+                        margin: "xs",
+                    },
+                    ...rows,
+                    {
+                        type: "separator",
+                        margin: "sm",
+                    },
+                    {
+                        type: "text",
+                        text: `総合計：${grandTotal}円`,
+                        size: "sm",
+                        weight: "bold",
+                        align: "end",
+                        wrap: true,
+                    },
                 ],
             },
         },
@@ -358,7 +562,7 @@ async function saveOrder(lineUserId, customerName, orderDate, itemKey) {
             ${lineUserId},
             ${customerName},
             ${itemKey},
-            ${item.label},
+            ${itemDisplayName(itemKey)},
             ${item.price},
             NOW(),
             NOW()
@@ -375,7 +579,7 @@ async function saveOrder(lineUserId, customerName, orderDate, itemKey) {
     return item;
 }
 
-async function getTargetOrdersText() {
+async function getReservationSummaryData() {
     const targetDates = getOrderTargetDates();
     const startDate = targetDates[0].iso;
     const endDate = targetDates[targetDates.length - 1].iso;
@@ -384,8 +588,6 @@ async function getTargetOrdersText() {
         SELECT
             order_date::text AS order_date,
             item_key,
-            item_label,
-            price,
             customer_name,
             created_at
         FROM lunch_orders
@@ -434,47 +636,44 @@ async function getTargetOrdersText() {
     }
 
     let grandTotal = 0;
-    const dateBlocks = [];
 
     for (const date of targetDates) {
-        const dateGroup = groupedByDate[date.iso];
-        let dateTotal = 0;
-        const blocks = [];
+        const items = groupedByDate[date.iso].items;
 
-        for (const key of FOOD_ITEM_KEYS) {
-            const item = ORDER_ITEMS[key];
-            const names = dateGroup.items[key] || [];
-            const count = names.length;
-            const subtotal = count * item.price;
-
-            dateTotal += subtotal;
-
-            blocks.push(
-                `[${item.label}] × ${count} = ${subtotal}円\n[` +
-                `${names.length ? names.join("、") : "なし"}]`
-            );
-        }
-
-        const noOrderItem = ORDER_ITEMS.no_order;
-        const noOrderNames = dateGroup.items.no_order || [];
-
-        blocks.push(
-            `[${noOrderItem.label}] × ${noOrderNames.length} = 0円\n[` +
-            `${noOrderNames.length ? noOrderNames.join("、") : "なし"}]`
-        );
-
-        grandTotal += dateTotal;
-
-        dateBlocks.push(
-            `${dateGroup.display}\n\n${blocks.join(
-                "\n\n"
-            )}\n\n合計：${dateTotal}円`
-        );
+        grandTotal += items.daily.length * ORDER_ITEMS.daily.price;
+        grandTotal += items.daily_side.length * ORDER_ITEMS.daily_side.price;
+        grandTotal += items.don.length * ORDER_ITEMS.don.price;
+        grandTotal += items.men.length * ORDER_ITEMS.men.price;
     }
 
-    return `※予約チェック\n\n${dateBlocks.join(
-        "\n\n------------------------------\n\n"
-    )}\n\n==============================\n総合計：${grandTotal}円`;
+    return {
+        targetDates,
+        groupedByDate,
+        grandTotal,
+    };
+}
+
+async function getOrderDetailText(orderDate, dateDisplay, itemKey) {
+    const item = ORDER_ITEMS[itemKey];
+
+    if (!item) {
+        return "対象メニューを確認できませんでした。";
+    }
+
+    const rows = await sql`
+        SELECT
+            customer_name,
+            created_at
+        FROM lunch_orders
+        WHERE order_date = ${orderDate}
+          AND item_key = ${itemKey}
+        ORDER BY created_at ASC
+    `;
+
+    const names = rows.map((row) => row.customer_name);
+
+    return `${dateDisplay}\n[${itemDisplayName(itemKey)}] × ${names.length}\n[${names.length ? names.join("、") : "なし"
+        }]`;
 }
 
 async function handlePostback(event) {
@@ -484,13 +683,22 @@ async function handlePostback(event) {
     if (!lineUserId) {
         await replyMessages(replyToken, [
             textMessage("ユーザー情報を取得できませんでした。"),
-            mainMenuFlex(),
         ]);
         return;
     }
 
     const params = new URLSearchParams(event.postback?.data || "");
     const action = params.get("action");
+
+    if (action === "show_main_menu") {
+        await clearSession(lineUserId);
+
+        await replyMessages(replyToken, [
+            mainMenuFlex(),
+        ]);
+
+        return;
+    }
 
     if (action === "start_order") {
         const session = await getSession(lineUserId);
@@ -508,7 +716,7 @@ async function handlePostback(event) {
         await setSession(lineUserId, "waiting_name");
 
         await replyMessages(replyToken, [
-            textMessage("お名前教えてね！"),
+            textMessage("お名前教えてね..."),
         ]);
 
         return;
@@ -524,7 +732,7 @@ async function handlePostback(event) {
             await setSession(lineUserId, "waiting_name");
 
             await replyMessages(replyToken, [
-                textMessage("先にお名前教えてね！"),
+                textMessage("先にお名前教えてね..."),
             ]);
 
             return;
@@ -537,27 +745,43 @@ async function handlePostback(event) {
             itemKey
         );
 
-        await clearSession(lineUserId);
+        await setSession(lineUserId, "selecting_item", session.customer_name);
 
         const completeText =
             itemKey === "no_order"
                 ? `受付完了．．．\n${dateDisplay}\n「${session.customer_name}」様＝＝＝[${item.label}]！`
-                : `注文完了．．．\n${dateDisplay}\n「${session.customer_name}」様＝＝＝[${item.label}]！`;
+                : `注文完了．．．\n${dateDisplay}\n「${session.customer_name}」様＝＝＝[${itemDisplayName(itemKey)}]！`;
 
         await replyMessages(replyToken, [
             textMessage(completeText),
-            mainMenuFlex(),
         ]);
 
         return;
     }
 
     if (action === "check_orders") {
-        const orderText = await getTargetOrdersText();
+        const summaryData = await getReservationSummaryData();
 
         await replyMessages(replyToken, [
-            textMessage(orderText),
-            mainMenuFlex(),
+            reservationCheckFlex(summaryData),
+        ]);
+
+        return;
+    }
+
+    if (action === "order_detail") {
+        const orderDate = params.get("date");
+        const dateDisplay = params.get("display");
+        const itemKey = params.get("item");
+
+        const detailText = await getOrderDetailText(
+            orderDate,
+            dateDisplay,
+            itemKey
+        );
+
+        await replyMessages(replyToken, [
+            textMessage(detailText),
         ]);
 
         return;
@@ -565,7 +789,6 @@ async function handlePostback(event) {
 
     await replyMessages(replyToken, [
         textMessage("操作を確認できませんでした。"),
-        mainMenuFlex(),
     ]);
 }
 
@@ -577,7 +800,6 @@ async function handleTextMessage(event) {
     if (!lineUserId) {
         await replyMessages(replyToken, [
             textMessage("ユーザー情報を取得できませんでした。"),
-            mainMenuFlex(),
         ]);
         return;
     }
@@ -599,7 +821,7 @@ async function handleTextMessage(event) {
 
         if (!customerName) {
             await replyMessages(replyToken, [
-                textMessage("お名前教えてね！"),
+                textMessage("お名前教えてね..."),
             ]);
             return;
         }
@@ -677,7 +899,6 @@ export async function POST(req) {
                 if (event.replyToken) {
                     await replyMessages(event.replyToken, [
                         textMessage("エラーが発生しました。もう一度試してください。"),
-                        mainMenuFlex(),
                     ]);
                 }
             }
