@@ -228,7 +228,7 @@ function compactOrderRow(date) {
                 spacing: "none",
                 margin: "none",
                 contents: [
-                    compactOrderButton("日替", "daily", date, 1),
+                    compactOrderButton("日替", "daily", date, 2),
                     compactOrderButton("日替(おかずのみ)", "daily_side", date, 4),
                     compactOrderButton("丼", "don", date, 1),
                     compactOrderButton("面", "men", date, 1),
