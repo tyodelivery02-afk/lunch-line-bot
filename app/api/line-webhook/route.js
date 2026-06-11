@@ -125,7 +125,7 @@ function mainMenuFlex() {
                     },
                     {
                         type: "button",
-                        style: "primary",
+                        style: "secondary",
                         height: "sm",
                         margin: "xs",
                         action: {
@@ -728,10 +728,7 @@ async function handlePostback(event) {
 
         await setSession(lineUserId, "selecting_item", session.customer_name);
 
-        const completeText =
-            itemKey === "no_order"
-                ? `受付完了．．．\n${dateDisplay}\n「${session.customer_name}」様＝＝＝[${item.label}]！`
-                : `注文完了．．．\n${dateDisplay}\n「${session.customer_name}」様＝＝＝[${itemDisplayName(itemKey)}]！`;
+        const completeText = `注文完了...\n${dateDisplay}\n「${session.customer_name}」様＝＝＝[${itemDisplayName(itemKey)}]！`;
 
         await replyMessages(replyToken, [
             textMessage(completeText),
