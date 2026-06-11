@@ -118,9 +118,9 @@ function mainMenuFlex() {
                 contents: [
                     {
                         type: "text",
-                        text: "※三度の飯は〇〇で決まり！",
+                        text: "三度の飯は〇〇で決まり！",
                         weight: "bold",
-                        size: "sm",
+                        size: "lg",
                         wrap: true,
                     },
                     {
@@ -163,6 +163,8 @@ function mainMenuFlex() {
 }
 
 function getJstDateByOffset(offsetDays) {
+    const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+
     const now = new Date();
     const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
 
@@ -171,10 +173,11 @@ function getJstDateByOffset(offsetDays) {
     const iso = jst.toISOString().slice(0, 10);
     const month = jst.getUTCMonth() + 1;
     const day = jst.getUTCDate();
+    const weekday = WEEKDAYS[jst.getUTCDay()];
 
     return {
         iso,
-        display: `${month}/${day}`,
+        display: `${month}/${day}(${weekday})`,
     };
 }
 
@@ -225,10 +228,10 @@ function compactOrderRow(date) {
                 spacing: "none",
                 margin: "none",
                 contents: [
-                    compactOrderButton("[日替]", "daily", date, 2),
-                    compactOrderButton("[日替(おかずのみ)]", "daily_side", date, 5),
-                    compactOrderButton("[丼]", "don", date, 2),
-                    compactOrderButton("[面]", "men", date, 2),
+                    compactOrderButton("日替", "daily", date, 1),
+                    compactOrderButton("日替(おかずのみ)", "daily_side", date, 4),
+                    compactOrderButton("丼", "don", date, 1),
+                    compactOrderButton("面", "men", date, 1),
                     compactOrderButton("やめる", "no_order", date, 2),
                 ],
             },
