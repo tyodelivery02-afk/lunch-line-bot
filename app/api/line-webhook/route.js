@@ -18,29 +18,28 @@ const MENU_URL =
 
 const ORDER_ITEMS = {
     daily: {
-        label: "１．日替",
+        label: "日替",
         price: 500,
     },
     daily_side: {
-        label: "２．日替（おかずのみ）",
+        label: "日替（おかずのみ）",
         price: 400,
     },
     don: {
-        label: "３．丼",
+        label: "丼",
         price: 500,
     },
     men: {
-        label: "４．面",
+        label: "面",
         price: 500,
     },
     no_order: {
-        label: "９９．やめる",
+        label: "やめる",
         price: 0,
     },
 };
 
 const FOOD_ITEM_KEYS = ["daily", "daily_side", "don", "men"];
-const CHECK_ITEM_KEYS = ["daily", "daily_side", "don", "men", "no_order"];
 
 function verifyLineSignature(rawBody, signature) {
     if (!CHANNEL_SECRET) return true;
@@ -97,22 +96,25 @@ function mainMenuFlex() {
         altText: "メインメニュー",
         contents: {
             type: "bubble",
+            size: "mega",
             body: {
                 type: "box",
                 layout: "vertical",
-                spacing: "sm",
-                paddingAll: "12px",
+                spacing: "xs",
+                paddingAll: "10px",
                 contents: [
                     {
                         type: "text",
                         text: "※三度の飯は〇〇で決まり！",
                         weight: "bold",
-                        size: "md",
+                        size: "sm",
                         wrap: true,
                     },
                     {
                         type: "button",
                         style: "primary",
+                        height: "sm",
+                        margin: "xs",
                         action: {
                             type: "uri",
                             label: "今日のメニューは？",
@@ -122,6 +124,8 @@ function mainMenuFlex() {
                     {
                         type: "button",
                         style: "primary",
+                        height: "sm",
+                        margin: "xs",
                         action: {
                             type: "postback",
                             label: "注文したい！",
@@ -131,6 +135,8 @@ function mainMenuFlex() {
                     {
                         type: "button",
                         style: "secondary",
+                        height: "sm",
+                        margin: "xs",
                         action: {
                             type: "postback",
                             label: "予約チェック！",
@@ -169,120 +175,111 @@ function getOrderTargetDates() {
     return dates;
 }
 
-function orderMenuFlex(customerName) {
-    const dates = getOrderTargetDates();
+function compactOrderButton(label, itemKey, date, flex = 2) {
+    return {
+        type: "button",
+        style: "link",
+        height: "sm",
+        flex,
+        action: {
+            type: "postback",
+            label,
+            data: `action=order&date=${date.iso}&display=${encodeURIComponent(
+                date.display
+            )}&item=${itemKey}`,
+        },
+    };
+}
 
+function compactOrderRow(date) {
+    return {
+        type: "box",
+        layout: "vertical",
+        spacing: "none",
+        margin: "xs",
+        contents: [
+            {
+                type: "text",
+                text: date.display,
+                size: "sm",
+                weight: "bold",
+                margin: "none",
+                wrap: false,
+            },
+            {
+                type: "box",
+                layout: "horizontal",
+                spacing: "none",
+                margin: "none",
+                contents: [
+                    compactOrderButton("日替", "daily", date, 2),
+                    compactOrderButton("おかず", "daily_side", date, 3),
+                    compactOrderButton("丼", "don", date, 1),
+                    compactOrderButton("面", "men", date, 1),
+                    compactOrderButton("やめる", "no_order", date, 2),
+                ],
+            },
+        ],
+    };
+}
+
+function buildCompactOrderRows() {
+    const dates = getOrderTargetDates();
+    const contents = [];
+
+    dates.forEach((date, index) => {
+        contents.push(compactOrderRow(date));
+
+        if (index < dates.length - 1) {
+            contents.push({
+                type: "separator",
+                margin: "xs",
+            });
+        }
+    });
+
+    return contents;
+}
+
+function orderMenuFlex(customerName) {
     return {
         type: "flex",
         altText: "注文メニュー",
         contents: {
-            type: "carousel",
-            contents: dates.map((date) => ({
-                type: "bubble",
-                body: {
-                    type: "box",
-                    layout: "vertical",
-                    spacing: "sm",
-                    paddingAll: "12px",
-                    contents: [
-                        {
-                            type: "text",
-                            text: "注文メニュー",
-                            weight: "bold",
-                            size: "lg",
-                            wrap: true,
-                        },
-                        {
-                            type: "text",
-                            text: `「${customerName}」様`,
-                            size: "sm",
-                            wrap: true,
-                        },
-                        {
-                            type: "text",
-                            text: date.display,
-                            weight: "bold",
-                            size: "xl",
-                            wrap: true,
-                        },
-                        {
-                            type: "text",
-                            text: "※[２．日替（おかずのみ）]以外は５００円均一！",
-                            size: "sm",
-                            wrap: true,
-                        },
-                        {
-                            type: "separator",
-                            margin: "md",
-                        },
-                        {
-                            type: "button",
-                            style: "primary",
-                            height: "sm",
-                            margin: "xs",
-                            action: {
-                                type: "postback",
-                                label: "１．日替",
-                                data: `action=order&date=${date.iso}&display=${encodeURIComponent(
-                                    date.display
-                                )}&item=daily`,
-                            },
-                        },
-                        {
-                            type: "button",
-                            style: "primary",
-                            height: "sm",
-                            margin: "xs",
-                            action: {
-                                type: "postback",
-                                label: "２．日替（おかずのみ）",
-                                data: `action=order&date=${date.iso}&display=${encodeURIComponent(
-                                    date.display
-                                )}&item=daily_side`,
-                            },
-                        },
-                        {
-                            type: "button",
-                            style: "primary",
-                            height: "sm",
-                            margin: "xs",
-                            action: {
-                                type: "postback",
-                                label: "３．丼",
-                                data: `action=order&date=${date.iso}&display=${encodeURIComponent(
-                                    date.display
-                                )}&item=don`,
-                            },
-                        },
-                        {
-                            type: "button",
-                            style: "primary",
-                            height: "sm",
-                            margin: "xs",
-                            action: {
-                                type: "postback",
-                                label: "４．面",
-                                data: `action=order&date=${date.iso}&display=${encodeURIComponent(
-                                    date.display
-                                )}&item=men`,
-                            },
-                        },
-                        {
-                            type: "button",
-                            style: "secondary",
-                            height: "sm",
-                            margin: "xs",
-                            action: {
-                                type: "postback",
-                                label: "９９．やめる",
-                                data: `action=order&date=${date.iso}&display=${encodeURIComponent(
-                                    date.display
-                                )}&item=no_order`,
-                            },
-                        },
-                    ],
-                },
-            })),
+            type: "bubble",
+            size: "giga",
+            body: {
+                type: "box",
+                layout: "vertical",
+                spacing: "xs",
+                paddingAll: "10px",
+                contents: [
+                    {
+                        type: "text",
+                        text: "注文メニュー",
+                        weight: "bold",
+                        size: "md",
+                        wrap: true,
+                    },
+                    {
+                        type: "text",
+                        text: `「${customerName}」様`,
+                        size: "xs",
+                        wrap: true,
+                    },
+                    {
+                        type: "text",
+                        text: "※おかずのみ以外は500円",
+                        size: "xs",
+                        wrap: true,
+                    },
+                    {
+                        type: "separator",
+                        margin: "xs",
+                    },
+                    ...buildCompactOrderRows(),
+                ],
+            },
         },
     };
 }
@@ -453,7 +450,7 @@ async function getTargetOrdersText() {
             dateTotal += subtotal;
 
             blocks.push(
-                `[${item.label}] × ${count} = ${subtotal}（円）\n[` +
+                `[${item.label}] × ${count} = ${subtotal}円\n[` +
                 `${names.length ? names.join("、") : "なし"}]`
             );
         }
@@ -462,7 +459,7 @@ async function getTargetOrdersText() {
         const noOrderNames = dateGroup.items.no_order || [];
 
         blocks.push(
-            `[${noOrderItem.label}] × ${noOrderNames.length} = 0（円）\n[` +
+            `[${noOrderItem.label}] × ${noOrderNames.length} = 0円\n[` +
             `${noOrderNames.length ? noOrderNames.join("、") : "なし"}]`
         );
 
@@ -471,13 +468,13 @@ async function getTargetOrdersText() {
         dateBlocks.push(
             `${dateGroup.display}\n\n${blocks.join(
                 "\n\n"
-            )}\n\n合計：${dateTotal}（円）！`
+            )}\n\n合計：${dateTotal}円`
         );
     }
 
     return `※予約チェック\n\n${dateBlocks.join(
         "\n\n------------------------------\n\n"
-    )}\n\n==============================\n総合計：${grandTotal}（円）！`;
+    )}\n\n==============================\n総合計：${grandTotal}円`;
 }
 
 async function handlePostback(event) {
