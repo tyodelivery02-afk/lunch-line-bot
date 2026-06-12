@@ -230,7 +230,7 @@ function compactOrderRow(date) {
                 type: "box",
                 layout: "horizontal",
                 spacing: "none",
-                margin: "xxs",
+                margin: "none",
                 contents: [
                     compactOrderButton("日替", "daily", date, 2),
                     compactOrderButton("日替(おかずのみ)", "daily_side", date,6),
@@ -373,7 +373,7 @@ function reservationHeaderRow() {
         type: "box",
         layout: "horizontal",
         spacing: "none",
-        margin: "xxs",
+        margin: "none",
         contents: [
             tableHeaderCell("日付", 2),
             tableHeaderCell("日替\n500円", 2),
