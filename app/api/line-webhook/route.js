@@ -134,7 +134,7 @@ function mainMenuFlex() {
                         margin: "xs",
                         action: {
                             type: "uri",
-                            label: "今日のメニューは？",
+                            label: "最新メニュー！",
                             uri: MENU_URL,
                         },
                     },
@@ -251,9 +251,9 @@ function compactOrderRow(date) {
                 spacing: "none",
                 margin: "none",
                 contents: [
-                    compactOrderButton("日替", "daily", date, 2),
-                    compactOrderButton("日替(おかずのみ)", "daily_side", date, 5),
-                    compactOrderButton("ご飯のみ", "rice", date, 3),
+                    compactOrderButton("[日替]", "daily", date, 2),
+                    compactOrderButton("[日替(おかずのみ)]", "daily_side", date, 5),
+                    compactOrderButton("[ご飯のみ]", "rice", date, 3),
                 ],
             },
             {
@@ -262,8 +262,8 @@ function compactOrderRow(date) {
                 spacing: "none",
                 margin: "none",
                 contents: [
-                    compactOrderButton("丼", "don", date, 2),
-                    compactOrderButton("面", "men", date, 2),
+                    compactOrderButton("[丼]", "don", date, 2),
+                    compactOrderButton("[面]", "men", date, 2),
                     compactOrderButton("やめる", "no_order", date, 3),
                 ],
             },
@@ -338,7 +338,7 @@ function orderMenuFlex(customerName) {
                     },
                     {
                         type: "text",
-                        text: "※[日替(おかずのみ)]は400円、ご飯は150円、その他は500円",
+                        text: "※[日替(おかずのみ)] は400円、[ご飯のみ] は150円、その他は500円",
                         size: CARD_TEXT_SIZE,
                         wrap: true,
                     },
