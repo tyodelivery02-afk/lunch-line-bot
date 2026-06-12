@@ -48,7 +48,7 @@ const FOOD_ITEM_KEYS = ["daily", "daily_side", "don", "men", "rice"];
 const CHECK_ITEM_KEYS = ["daily", "daily_side", "don", "men", "rice", "no_order"];
 
 const CARD_TITLE_SIZE = "md";
-const CARD_TEXT_SIZE = "xs";
+const CARD_TEXT_SIZE = "sm";
 
 function verifyLineSignature(rawBody, signature) {
     if (!CHANNEL_SECRET) return true;
@@ -122,7 +122,7 @@ function mainMenuFlex() {
                 contents: [
                     {
                         type: "text",
-                        text: "三度の飯は〇〇で決まり！",
+                        text: "今回の飯は〇〇で決まり！",
                         weight: "bold",
                         size: "md",
                         wrap: true,
@@ -233,7 +233,7 @@ function compactOrderRow(date) {
                 margin: "none",
                 contents: [
                     compactOrderButton("日替", "daily", date, 2),
-                    compactOrderButton("日替(おかずのみ)", "daily_side", date,6),
+                    compactOrderButton("おかずのみ", "daily_side", date, 4),
                     compactOrderButton("ご飯のみ", "rice", date, 3),
                     compactOrderButton("丼", "don", date, 2),
                     compactOrderButton("面", "men", date, 2),
@@ -375,7 +375,6 @@ function reservationHeaderRow() {
         spacing: "none",
         margin: "none",
         contents: [
-            tableHeaderCell("日付", 2),
             tableHeaderCell("日替\n500円", 2),
             tableHeaderCell("日替\n（おかずのみ）\n400円", 3),
             tableHeaderCell("ご飯のみ\n150円", 2),
@@ -389,30 +388,45 @@ function reservationHeaderRow() {
 function reservationTableRow(date, dateGroup) {
     const dailyCount = dateGroup.items.daily.length;
     const sideCount = dateGroup.items.daily_side.length;
+    const riceCount = dateGroup.items.rice.length;
     const donCount = dateGroup.items.don.length;
     const menCount = dateGroup.items.men.length;
-    const riceCount = dateGroup.items.rice.length;
 
     const total =
         dailyCount * ORDER_ITEMS.daily.price +
         sideCount * ORDER_ITEMS.daily_side.price +
+        riceCount * ORDER_ITEMS.rice.price +
         donCount * ORDER_ITEMS.don.price +
-        menCount * ORDER_ITEMS.men.price +
-        riceCount * ORDER_ITEMS.rice.price;
+        menCount * ORDER_ITEMS.men.price;
 
     return {
         type: "box",
-        layout: "horizontal",
+        layout: "vertical",
         spacing: "none",
-        margin: "none",
+        margin: "xs",
         contents: [
-            tableTextCell(date.display, 2, "bold"),
-            tableCountButton(dailyCount, date, "daily", 2),
-            tableCountButton(sideCount, date, "daily_side", 2),
-            tableCountButton(riceCount, date, "rice", 2),
-            tableCountButton(donCount, date, "don", 1),
-            tableCountButton(menCount, date, "men", 1),
-            tableTextCell(`${total}`, 2, "bold"),
+            {
+                type: "text",
+                text: date.display,
+                size: CARD_TEXT_SIZE,
+                weight: "bold",
+                margin: "none",
+                wrap: false,
+            },
+            {
+                type: "box",
+                layout: "horizontal",
+                spacing: "none",
+                margin: "none",
+                contents: [
+                    tableCountButton(dailyCount, date, "daily", 2),
+                    tableCountButton(sideCount, date, "daily_side", 3),
+                    tableCountButton(riceCount, date, "rice", 2),
+                    tableCountButton(donCount, date, "don", 2),
+                    tableCountButton(menCount, date, "men", 2),
+                    tableTextCell(`${total}`, 2, "bold"),
+                ],
+            },
         ],
     };
 }
