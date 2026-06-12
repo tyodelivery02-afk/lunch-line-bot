@@ -230,10 +230,10 @@ function compactOrderRow(date) {
                 type: "box",
                 layout: "horizontal",
                 spacing: "none",
-                margin: "none",
+                margin: "xxs",
                 contents: [
                     compactOrderButton("日替", "daily", date, 2),
-                    compactOrderButton("日替\n(おかずのみ)", "daily_side", date, 4),
+                    compactOrderButton("日替(おかずのみ)", "daily_side", date,6),
                     compactOrderButton("ご飯のみ", "rice", date, 3),
                     compactOrderButton("丼", "don", date, 2),
                     compactOrderButton("面", "men", date, 2),
@@ -294,10 +294,10 @@ function orderMenuFlex(customerName) {
                                 style: "primary",
                                 color: "#00B900",
                                 height: "sm",
-                                flex: 3,
+                                flex: 2,
                                 action: {
                                     type: "postback",
-                                    label: "[メインメニュー]",
+                                    label: "メインメニュー",
                                     data: "action=show_main_menu",
                                 },
                             }
@@ -373,7 +373,7 @@ function reservationHeaderRow() {
         type: "box",
         layout: "horizontal",
         spacing: "none",
-        margin: "xs",
+        margin: "xxs",
         contents: [
             tableHeaderCell("日付", 2),
             tableHeaderCell("日替\n500円", 2),
@@ -469,10 +469,10 @@ function reservationCheckFlex(summaryData) {
                                 style: "primary",
                                 color: "#00B900",
                                 height: "sm",
-                                flex: 3,
+                                flex: 2,
                                 action: {
                                     type: "postback",
-                                    label: "[メインメニュー]",
+                                    label: "メインメニュー",
                                     data: "action=show_main_menu",
                                 },
                             }
