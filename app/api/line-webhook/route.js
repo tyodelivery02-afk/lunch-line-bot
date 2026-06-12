@@ -177,11 +177,13 @@ function getJstDateByOffset(offsetDays) {
     const iso = jst.toISOString().slice(0, 10);
     const month = jst.getUTCMonth() + 1;
     const day = jst.getUTCDate();
-    const weekday = WEEKDAYS[jst.getUTCDay()];
+    const weekdayNum = jst.getUTCDay();
+    const weekday = WEEKDAYS[weekdayNum];
 
     return {
         iso,
         display: `${month}/${day}(${weekday})`,
+        weekdayNum,
     };
 }
 
@@ -190,6 +192,23 @@ function getOrderTargetDates() {
 
     for (let i = 1; i <= 7; i++) {
         dates.push(getJstDateByOffset(i));
+    }
+
+    return dates;
+}
+
+function getOrderTargetWeekdays() {
+    const dates = [];
+    let offsetDays = 1;
+
+    while (dates.length < 5) {
+        const date = getJstDateByOffset(offsetDays);
+
+        if (date.weekdayNum !== 0 && date.weekdayNum !== 6) {
+            dates.push(date);
+        }
+
+        offsetDays++;
     }
 
     return dates;
@@ -233,11 +252,19 @@ function compactOrderRow(date) {
                 margin: "none",
                 contents: [
                     compactOrderButton("日替", "daily", date, 2),
-                    compactOrderButton("おかずのみ", "daily_side", date, 4),
+                    compactOrderButton("日替(おかずのみ)", "daily_side", date, 5),
                     compactOrderButton("ご飯のみ", "rice", date, 3),
+                ],
+            },
+            {
+                type: "box",
+                layout: "horizontal",
+                spacing: "none",
+                margin: "none",
+                contents: [
                     compactOrderButton("丼", "don", date, 2),
                     compactOrderButton("面", "men", date, 2),
-                    compactOrderButton("やめる", "no_order", date, 2),
+                    compactOrderButton("やめる", "no_order", date, 3),
                 ],
             },
         ],
@@ -245,7 +272,7 @@ function compactOrderRow(date) {
 }
 
 function buildCompactOrderRows() {
-    const dates = getOrderTargetDates();
+    const dates = getOrderTargetWeekdays();
     const contents = [];
 
     dates.forEach((date, index) => {
@@ -601,7 +628,7 @@ async function saveOrder(lineUserId, customerName, orderDate, itemKey) {
 }
 
 async function getReservationSummaryData() {
-    const targetDates = getOrderTargetDates();
+    const targetDates = getOrderTargetWeekdays();
     const startDate = targetDates[0].iso;
     const endDate = targetDates[targetDates.length - 1].iso;
 
