@@ -26,6 +26,10 @@ const ORDER_ITEMS = {
         detailLabel: "日替（おかずのみ）",
         price: 400,
     },
+    rice: {
+        label: "ご飯のみ",
+        price: 150,
+    },
     don: {
         label: "丼",
         price: 500,
@@ -40,8 +44,8 @@ const ORDER_ITEMS = {
     },
 };
 
-const FOOD_ITEM_KEYS = ["daily", "daily_side", "don", "men"];
-const CHECK_ITEM_KEYS = ["daily", "daily_side", "don", "men", "no_order"];
+const FOOD_ITEM_KEYS = ["daily", "daily_side", "don", "men", "rice"];
+const CHECK_ITEM_KEYS = ["daily", "daily_side", "don", "men", "rice", "no_order"];
 
 const CARD_TITLE_SIZE = "md";
 const CARD_TEXT_SIZE = "xs";
@@ -120,7 +124,7 @@ function mainMenuFlex() {
                         type: "text",
                         text: "三度の飯は〇〇で決まり！",
                         weight: "bold",
-                        size: "lg",
+                        size: "md",
                         wrap: true,
                     },
                     {
@@ -230,6 +234,7 @@ function compactOrderRow(date) {
                 contents: [
                     compactOrderButton("日替", "daily", date, 2),
                     compactOrderButton("日替(おかずのみ)", "daily_side", date, 4),
+                    compactOrderButton("ご飯のみ", "rice", date, 2),
                     compactOrderButton("丼", "don", date, 1),
                     compactOrderButton("面", "men", date, 1),
                     compactOrderButton("やめる", "no_order", date, 2),
@@ -290,7 +295,8 @@ function orderMenuFlex(customerName) {
                                 height: "sm",
                                 flex: 4,
                                 action: {
-                                    type: "postback",
+                                    type: "button",
+                                    style: "secondary",
                                     label: "[メインメニュー]",
                                     data: "action=show_main_menu",
                                 },
@@ -372,6 +378,7 @@ function reservationHeaderRow() {
             tableHeaderCell("日付", 2),
             tableHeaderCell("日替\n500円", 2),
             tableHeaderCell("日替（おかずのみ）\n400円", 3),
+            tableHeaderCell("ご飯のみ\n150円", 2),
             tableHeaderCell("丼\n500円", 1),
             tableHeaderCell("面\n500円", 1),
             tableHeaderCell("合計", 2),
@@ -384,12 +391,14 @@ function reservationTableRow(date, dateGroup) {
     const sideCount = dateGroup.items.daily_side.length;
     const donCount = dateGroup.items.don.length;
     const menCount = dateGroup.items.men.length;
+    const riceCount = dateGroup.items.rice.length;
 
     const total =
         dailyCount * ORDER_ITEMS.daily.price +
         sideCount * ORDER_ITEMS.daily_side.price +
         donCount * ORDER_ITEMS.don.price +
-        menCount * ORDER_ITEMS.men.price;
+        menCount * ORDER_ITEMS.men.price +
+        riceCount * ORDER_ITEMS.rice.price;
 
     return {
         type: "box",
@@ -400,6 +409,7 @@ function reservationTableRow(date, dateGroup) {
             tableTextCell(date.display, 2, "bold"),
             tableCountButton(dailyCount, date, "daily", 2),
             tableCountButton(sideCount, date, "daily_side", 2),
+            tableCountButton(riceCount, date, "rice", 2),
             tableCountButton(donCount, date, "don", 1),
             tableCountButton(menCount, date, "men", 1),
             tableTextCell(`${total}`, 2, "bold"),
@@ -460,7 +470,8 @@ function reservationCheckFlex(summaryData) {
                                 height: "sm",
                                 flex: 4,
                                 action: {
-                                    type: "postback",
+                                    type: "button",
+                                    style: "secondary",
                                     label: "[メインメニュー]",
                                     data: "action=show_main_menu",
                                 },
@@ -591,14 +602,15 @@ async function getReservationSummaryData() {
           AND order_date <= ${endDate}
         ORDER BY
             order_date ASC,
-            CASE item_key
-                WHEN 'daily' THEN 1
-                WHEN 'daily_side' THEN 2
-                WHEN 'don' THEN 3
-                WHEN 'men' THEN 4
-                WHEN 'no_order' THEN 99
-                ELSE 100
-            END,
+CASE item_key
+    WHEN 'daily' THEN 1
+    WHEN 'daily_side' THEN 2
+    WHEN 'don' THEN 3
+    WHEN 'men' THEN 4
+    WHEN 'rice' THEN 5
+    WHEN 'no_order' THEN 99
+    ELSE 100
+END,
             created_at ASC
     `;
 
@@ -610,6 +622,7 @@ async function getReservationSummaryData() {
             items: {
                 daily: [],
                 daily_side: [],
+                rice: [],
                 don: [],
                 men: [],
                 no_order: [],
