@@ -233,10 +233,10 @@ function compactOrderRow(date) {
                 margin: "none",
                 contents: [
                     compactOrderButton("日替", "daily", date, 2),
-                    compactOrderButton("日替(おかずのみ)", "daily_side", date, 4),
-                    compactOrderButton("ご飯のみ", "rice", date, 2),
-                    compactOrderButton("丼", "don", date, 1),
-                    compactOrderButton("面", "men", date, 1),
+                    compactOrderButton("日替\n(おかずのみ)", "daily_side", date, 4),
+                    compactOrderButton("ご飯のみ", "rice", date, 3),
+                    compactOrderButton("丼", "don", date, 2),
+                    compactOrderButton("面", "men", date, 2),
                     compactOrderButton("やめる", "no_order", date, 2),
                 ],
             },
@@ -294,7 +294,7 @@ function orderMenuFlex(customerName) {
                                 style: "primary",
                                 color: "#00B900",
                                 height: "sm",
-                                flex: 4,
+                                flex: 3,
                                 action: {
                                     type: "postback",
                                     label: "[メインメニュー]",
@@ -311,7 +311,7 @@ function orderMenuFlex(customerName) {
                     },
                     {
                         type: "text",
-                        text: "※[日替(おかずのみ)]は400円、その他は500円",
+                        text: "※[日替(おかずのみ)]は400円、ご飯は150円、その他は500円",
                         size: CARD_TEXT_SIZE,
                         wrap: true,
                     },
@@ -377,10 +377,10 @@ function reservationHeaderRow() {
         contents: [
             tableHeaderCell("日付", 2),
             tableHeaderCell("日替\n500円", 2),
-            tableHeaderCell("日替（おかずのみ）\n400円", 3),
+            tableHeaderCell("日替\n（おかずのみ）\n400円", 3),
             tableHeaderCell("ご飯のみ\n150円", 2),
-            tableHeaderCell("丼\n500円", 1),
-            tableHeaderCell("面\n500円", 1),
+            tableHeaderCell("丼\n500円", 2),
+            tableHeaderCell("面\n500円", 2),
             tableHeaderCell("合計", 2),
         ],
     };
@@ -469,7 +469,7 @@ function reservationCheckFlex(summaryData) {
                                 style: "primary",
                                 color: "#00B900",
                                 height: "sm",
-                                flex: 4,
+                                flex: 3,
                                 action: {
                                     type: "postback",
                                     label: "[メインメニュー]",
