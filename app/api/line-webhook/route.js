@@ -395,6 +395,32 @@ function tableCountButton(count, date, itemKey, flex = 2) {
     };
 }
 
+function reservationDateButton(date) {
+    return {
+        type: "box",
+        layout: "vertical",
+        margin: "none",
+        action: {
+            type: "postback",
+            label: date.display,
+            data: `action=order_date_detail&date=${date.iso}&display=${encodeURIComponent(
+                date.display
+            )}`,
+        },
+        contents: [
+            {
+                type: "text",
+                text: date.display,
+                size: CARD_TEXT_SIZE,
+                weight: "bold",
+                color: "#00B900",
+                margin: "none",
+                wrap: false,
+            },
+        ],
+    };
+}
+
 function reservationHeaderRow() {
     return {
         type: "box",
@@ -432,14 +458,7 @@ function reservationTableRow(date, dateGroup) {
         spacing: "none",
         margin: "xs",
         contents: [
-            {
-                type: "text",
-                text: date.display,
-                size: CARD_TEXT_SIZE,
-                weight: "bold",
-                margin: "none",
-                wrap: false,
-            },
+            reservationDateButton(date),
             {
                 type: "box",
                 layout: "horizontal",
@@ -714,6 +733,62 @@ async function getOrderDetailText(orderDate, dateDisplay, itemKey) {
         }]`;
 }
 
+async function getOrderDateDetailText(orderDate, dateDisplay) {
+    const rows = await sql`
+        SELECT
+            item_key,
+            customer_name,
+            created_at
+        FROM lunch_orders
+        WHERE order_date = ${orderDate}
+        ORDER BY
+            CASE item_key
+                WHEN 'daily' THEN 1
+                WHEN 'daily_side' THEN 2
+                WHEN 'rice' THEN 3
+                WHEN 'don' THEN 4
+                WHEN 'men' THEN 5
+                WHEN 'no_order' THEN 99
+                ELSE 100
+            END,
+            created_at ASC
+    `;
+
+    const grouped = {
+        daily: [],
+        daily_side: [],
+        rice: [],
+        don: [],
+        men: [],
+        no_order: [],
+    };
+
+    for (const row of rows) {
+        if (!grouped[row.item_key]) {
+            continue;
+        }
+
+        grouped[row.item_key].push(row.customer_name);
+    }
+
+    const itemKeys = [
+        "daily",
+        "daily_side",
+        "rice",
+        "don",
+        "men",
+        "no_order",
+    ];
+
+    const lines = itemKeys.map((itemKey) => {
+        const names = grouped[itemKey];
+        return `[${itemDisplayName(itemKey)}] × ${names.length}  [${names.length ? names.join("、") : "なし"
+            }]`;
+    });
+
+    return `${dateDisplay}\n${lines.join("\n")}`;
+}
+
 async function handlePostback(event) {
     const lineUserId = event.source?.userId;
     const replyToken = event.replyToken;
@@ -799,6 +874,22 @@ async function handlePostback(event) {
 
         await replyMessages(replyToken, [
             reservationCheckFlex(summaryData),
+        ]);
+
+        return;
+    }
+
+    if (action === "order_date_detail") {
+        const orderDate = params.get("date");
+        const dateDisplay = params.get("display");
+
+        const detailText = await getOrderDateDetailText(
+            orderDate,
+            dateDisplay
+        );
+
+        await replyMessages(replyToken, [
+            textMessage(detailText),
         ]);
 
         return;
