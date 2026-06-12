@@ -551,7 +551,7 @@ async function setSession(lineUserId, state, customerName = null) {
             NOW()
         )
         ON CONFLICT (line_user_id)
-        DO UPDATE SET
+        DO UPDATE SET 
             state = EXCLUDED.state,
             customer_name = COALESCE(EXCLUDED.customer_name, lunch_user_sessions.customer_name),
             updated_at = NOW()
