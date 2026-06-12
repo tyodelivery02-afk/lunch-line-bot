@@ -291,16 +291,16 @@ function orderMenuFlex(customerName) {
                             },
                             {
                                 type: "button",
-                                style: "link",
+                                style: "primary",
+                                color: "#00B900",
                                 height: "sm",
                                 flex: 4,
                                 action: {
-                                    type: "button",
-                                    style: "secondary",
+                                    type: "postback",
                                     label: "[メインメニュー]",
                                     data: "action=show_main_menu",
                                 },
-                            },
+                            }
                         ],
                     },
                     {
@@ -466,16 +466,16 @@ function reservationCheckFlex(summaryData) {
                             },
                             {
                                 type: "button",
-                                style: "link",
+                                style: "primary",
+                                color: "#00B900",
                                 height: "sm",
                                 flex: 4,
                                 action: {
-                                    type: "button",
-                                    style: "secondary",
+                                    type: "postback",
                                     label: "[メインメニュー]",
                                     data: "action=show_main_menu",
                                 },
-                            },
+                            }
                         ],
                     },
                     {
